@@ -467,24 +467,7 @@
         </div>
 
         <!-- Admin Dashboard Modal (Hidden Cloud UI) -->
-        <div id="admin-modal" class="fixed inset-0 z-[200] hidden items-center justify-center modal-overlay bg-ocean-900/90 p-4 opacity-0 transition-opacity duration-300">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="admin-modal-content">
-                <div class="bg-ocean-900 text-white p-6 flex justify-between items-center shrink-0">
-                    <h3 class="text-2xl font-bold flex items-center gap-2"><i class="ph-fill ph-lock-key"></i> Live Service Tickets Dashboard</h3>
-                    <button id="close-admin-btn" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="ph-bold ph-x text-2xl"></i>
-                    </button>
-                </div>
-                <div class="p-6 bg-sand-100 border-b border-sand-200 shrink-0">
-                    <p class="text-ocean-900 font-medium">Welcome to the back-office. Here are your live customer repair requests.</p>
-                </div>
-                <div class="p-6 overflow-y-auto flex-1 bg-gray-50">
-                    <div id="admin-tickets-container" class="space-y-4">
-                        <div class="text-center text-gray-500 py-8"><i class="ph ph-spinner animate-spin text-3xl mb-2"></i><br>Loading secure tickets...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- REMOVED: Managed in the separate admin.html file to keep deployment secure, clean, and functioning perfectly -->
 
     </main>
 
@@ -530,7 +513,7 @@
                         <li><a href="#reviews" class="hover:text-white transition-colors">Testimonials</a></li>
                         <li><a href="#contact" class="hover:text-white transition-colors">Contact & Hours</a></li>
                         <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
-                        <li><button id="admin-login-btn" class="hover:text-white transition-colors text-left flex items-center gap-2"><i class="ph-fill ph-lock-key"></i> Admin Dashboard</button></li>
+                        <li><a href="admin.html" target="_blank" id="admin-login-link" class="hover:text-white transition-colors text-left flex items-center gap-2"><i class="ph-fill ph-lock-key"></i> Admin Dashboard</a></li>
                     </ul>
                 </div>
             </div>
@@ -722,6 +705,9 @@
                 // Quick visual pulse to show it filled
                 issueBox.classList.add('ring-2', 'ring-seafoam-500');
                 setTimeout(() => issueBox.classList.remove('ring-2', 'ring-seafoam-500'), 1500);
+                
+                // UX FIX: Automatically scroll down to the contact form so the user sees the filled data
+                document.getElementById('contact').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
             closeQuoteModal();
         }
@@ -730,67 +716,58 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "mock-key",
+        // ==========================================
+        // CONFIGURATION AREA
+        // ==========================================
+        // Paste your real Firebase Config object below to switch from sandbox mode to live internet cloud syncing!
+        const FIREBASE_CONFIG = {
+            apiKey: "mock-key", // Change this to your real apiKey
             projectId: "mock-project",
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        let currentUser = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'iscr-app-v1';
+        let db = null;
+        let auth = null;
+        let isCloud = false;
 
-        // Make backend management functions available globally for inline HTML event handlers
-        window.updateTicketStatus = async function(ticketId, newStatus) {
-            if (!currentUser) return;
+        // Verify configuration values
+        if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "mock-key") {
             try {
-                const ticketRef = doc(db, 'artifacts', appId, 'public', 'data', 'tickets', ticketId);
-                await updateDoc(ticketRef, { status: newStatus });
-            } catch (error) {
-                console.error("Error updating ticket:", error);
-            }
-        };
-
-        window.deleteTicket = async function(ticketId) {
-            if (!currentUser) return;
-            // Using a custom UI confirm pattern would be ideal, but for immediate backend functionality we execute the delete
-            try {
-                const ticketRef = doc(db, 'artifacts', appId, 'public', 'data', 'tickets', ticketId);
-                await deleteDoc(ticketRef);
-            } catch (error) {
-                console.error("Error deleting ticket:", error);
-            }
-        };
-
-        // Secure Authentication
-        async function init() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
-                    currentUser = cred.user;
-                } else {
-                    const cred = await signInAnonymously(auth);
-                    currentUser = cred.user;
-                }
-                
-                setupFormHandler();
-                setupAdminDashboard();
-            } catch (error) {
-                console.error("Auth error:", error);
+                const app = initializeApp(FIREBASE_CONFIG);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isCloud = true;
+            } catch (err) {
+                console.warn("Could not load Cloud database. Reverting to sandbox storage.", err);
             }
         }
 
+        // Authenticate Cloud connection
+        async function init() {
+            if (isCloud) {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (err) {
+                    console.error("Authentication failed. Switching storage engines.", err);
+                    isCloud = false;
+                }
+            }
+            setupFormHandler();
+        }
+
+        // Setup the Client Intake Ticket Submission
         function setupFormHandler() {
             const form = document.getElementById('contact-form');
             if (!form) return;
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!currentUser) return; // Guard clause requiring auth
 
                 const nameInput = document.getElementById('name').value;
                 const emailInput = document.getElementById('email').value;
@@ -800,24 +777,35 @@
                 const btn = form.querySelector('button[type="submit"]');
                 const originalText = btn.innerHTML;
                 
-                // Loading UI
-                btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Sending securely...';
+                btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Saving Ticket...';
                 btn.disabled = true;
                 btn.classList.add('opacity-75');
 
-                try {
-                    // Save to Public Data collection so Admin can see all submissions
-                    const ticketsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
-                    await addDoc(ticketsRef, {
-                        name: nameInput,
-                        email: emailInput,
-                        phone: phoneInput,
-                        issue: issueInput,
-                        timestamp: new Date().toISOString(),
-                        status: 'New'
-                    });
+                const ticketPayload = {
+                    name: nameInput,
+                    email: emailInput,
+                    phone: phoneInput,
+                    issue: issueInput,
+                    timestamp: new Date().toISOString(),
+                    status: 'New'
+                };
 
-                    // Success UI Sequence
+                try {
+                    if (isCloud) {
+                        const ticketsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
+                        await addDoc(ticketsRef, ticketPayload);
+                    } else {
+                        const key = `iscr_tickets_${appId}`;
+                        const existingRaw = localStorage.getItem(key);
+                        const existingList = existingRaw ? JSON.parse(existingRaw) : [];
+                        
+                        // FIX: Ensure ID generation works securely across all browsers/mobile devices on GitHub pages
+                        ticketPayload.id = 'localticket_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+                        existingList.push(ticketPayload);
+                        
+                        localStorage.setItem(key, JSON.stringify(existingList));
+                    }
+
                     form.querySelectorAll('div:not(#form-message)').forEach(el => el.style.display = 'none');
                     btn.style.display = 'none';
                     const msg = document.getElementById('form-message');
@@ -834,8 +822,8 @@
                     }, 5000);
 
                 } catch (err) {
-                    console.error("Database connection error: ", err);
-                    btn.innerHTML = 'Error Connecting. Try Again.';
+                    console.error("Form transmission failed: ", err);
+                    btn.innerHTML = 'Submission Error. Try Again.';
                     setTimeout(() => {
                         btn.innerHTML = originalText;
                         btn.disabled = false;
@@ -845,117 +833,7 @@
             });
         }
 
-        function setupAdminDashboard() {
-            const adminBtn = document.getElementById('admin-login-btn');
-            const closeAdminBtn = document.getElementById('close-admin-btn');
-            const adminModal = document.getElementById('admin-modal');
-            const adminContent = document.getElementById('admin-modal-content');
-            const ticketsContainer = document.getElementById('admin-tickets-container');
-            
-            let unsubscribe = null;
-
-            function openAdmin() {
-                adminModal.classList.remove('hidden');
-                adminModal.classList.add('flex');
-                
-                // Trigger transition
-                setTimeout(() => {
-                    adminModal.classList.remove('opacity-0');
-                    adminContent.classList.remove('scale-95');
-                }, 10);
-
-                if (!currentUser) {
-                    ticketsContainer.innerHTML = `<div class="text-red-500 text-center p-4">Not Authenticated.</div>`;
-                    return;
-                }
-                
-                // Fetch Live Data stream
-                const ticketsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
-                unsubscribe = onSnapshot(ticketsRef, (snapshot) => {
-                    const tickets = [];
-                    snapshot.forEach((doc) => {
-                        tickets.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    // Client-side sort by timestamp (newest first) to avoid missing index errors
-                    tickets.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    
-                    renderTickets(tickets);
-                }, (error) => {
-                    console.error("Live Feed Error:", error);
-                    ticketsContainer.innerHTML = `<div class="text-red-500 text-center p-4">Failed to load live tickets.</div>`;
-                });
-            }
-
-            function closeAdmin() {
-                adminModal.classList.add('opacity-0');
-                adminContent.classList.add('scale-95');
-                setTimeout(() => {
-                    adminModal.classList.add('hidden');
-                    adminModal.classList.remove('flex');
-                }, 300);
-                
-                // Stop listening to database updates when modal is closed
-                if (unsubscribe) unsubscribe();
-            }
-
-            function renderTickets(tickets) {
-                if (tickets.length === 0) {
-                    ticketsContainer.innerHTML = `<div class="text-center text-gray-500 py-8 bg-white rounded-xl shadow-sm border border-sand-200">
-                        <i class="ph-duotone ph-tray text-4xl mb-3 text-gray-300"></i>
-                        <p>No repair tickets received yet.</p>
-                    </div>`;
-                    return;
-                }
-                
-                ticketsContainer.innerHTML = tickets.map(ticket => {
-                    // Status Badge Styling Logic
-                    let statusColor = "bg-seafoam-100 text-seafoam-600"; // Default New
-                    if (ticket.status === 'In Progress') statusColor = "bg-blue-100 text-blue-600";
-                    if (ticket.status === 'Completed') statusColor = "bg-gray-100 text-gray-600";
-                    
-                    return `
-                        <div class="bg-white p-5 rounded-xl shadow-sm border border-sand-200 flex flex-col gap-4 transition-all hover:shadow-md">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="font-bold text-ocean-900 text-xl">${ticket.name}</h4>
-                                    <div class="flex flex-wrap gap-x-4 mt-1">
-                                        <p class="text-gray-600 font-medium text-sm"><i class="ph-fill ph-phone text-seafoam-500 mr-1"></i> <a href="tel:${ticket.phone}" class="hover:text-seafoam-600">${ticket.phone}</a></p>
-                                        ${ticket.email ? `<p class="text-gray-600 font-medium text-sm"><i class="ph-fill ph-envelope-simple text-seafoam-500 mr-1"></i> <a href="mailto:${ticket.email}" class="hover:text-seafoam-600">${ticket.email}</a></p>` : ''}
-                                    </div>
-                                </div>
-                                <div class="flex flex-col items-end gap-2">
-                                    <span class="${statusColor} px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">${ticket.status || 'New'}</span>
-                                    <span class="text-gray-400 text-xs font-medium"><i class="ph ph-clock mr-1"></i>${new Date(ticket.timestamp).toLocaleString([], {month:'short', day:'numeric', hour: '2-digit', minute:'2-digit'})}</span>
-                                </div>
-                            </div>
-                            <div class="bg-sand-50 p-4 rounded-xl text-gray-700 text-sm border border-sand-200 relative">
-                                <span class="text-[10px] font-bold text-sand-800 uppercase tracking-widest absolute -top-2 left-4 bg-sand-50 px-2 border border-sand-200 rounded">Issue Description</span>
-                                <p class="mt-2 text-base">${ticket.issue}</p>
-                            </div>
-                            <!-- Real-world Backend Management Controls -->
-                            <div class="flex justify-end gap-2 mt-2 pt-4 border-t border-gray-100">
-                                ${ticket.status !== 'In Progress' && ticket.status !== 'Completed' ? 
-                                    `<button onclick="window.updateTicketStatus('${ticket.id}', 'In Progress')" class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg text-sm font-bold transition-colors">Start Work</button>` : ''}
-                                ${ticket.status !== 'Completed' ? 
-                                    `<button onclick="window.updateTicketStatus('${ticket.id}', 'Completed')" class="px-4 py-2 bg-seafoam-50 text-seafoam-600 hover:bg-seafoam-500 hover:text-white rounded-lg text-sm font-bold transition-colors">Mark Completed</button>` : ''}
-                                <button onclick="window.deleteTicket('${ticket.id}')" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded-lg text-sm font-bold transition-colors ml-auto flex items-center gap-1">
-                                    <i class="ph-fill ph-trash"></i> Delete
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            if(adminBtn) adminBtn.addEventListener('click', (e) => { e.preventDefault(); openAdmin(); });
-            if(closeAdminBtn) closeAdminBtn.addEventListener('click', closeAdmin);
-            adminModal.addEventListener('click', (e) => {
-                if (e.target === adminModal) closeAdmin();
-            });
-        }
-
-        // Boot up cloud connection
+        // Initialize Core Engine
         init();
     </script>
 </body>
