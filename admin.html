@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISCR Back Office | Live Tickets</title>
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ocean: { 900: '#0B2031', 800: '#143854' },
+                        seafoam: { 500: '#2A9D8F', 600: '#218277', 50: '#E9F5F4' },
+                        sand: { 100: '#F5F3ED', 200: '#E6E1D3', 800: '#5C5441' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-size: 16px; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <header class="bg-ocean-900 text-white shadow-md py-4 px-6 shrink-0">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-seafoam-500 text-white p-2 rounded-lg">
+                    <i class="ph ph-desktop text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Island Side Computer Repair</h1>
+                    <p class="text-xs text-seafoam-500 font-semibold tracking-wider uppercase">Live Service Dashboard</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Live Connection Badge -->
+                <div id="connection-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                    <span class="h-2.5 w-2.5 rounded-full bg-yellow-400 animate-pulse"></span>
+                    Local Sandbox Mode
+                </div>
+                <a href="index.html" class="text-sm font-medium hover:text-seafoam-500 transition-colors flex items-center gap-1">
+                    <i class="ph ph-arrow-left"></i> View Live Site
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+        
+        <!-- Analytics & Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Total Active Tickets</p>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="stat-total" class="text-3xl font-extrabold text-ocean-900">0</span>
+                    <span class="text-xs text-gray-400">received</span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-sm font-bold text-yellow-600 uppercase tracking-wider">New Tickets</p>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="stat-new" class="text-3xl font-extrabold text-yellow-600">0</span>
+                    <span class="text-xs text-gray-400">waiting</span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-sm font-bold text-blue-600 uppercase tracking-wider">In Progress</p>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="stat-progress" class="text-3xl font-extrabold text-blue-600">0</span>
+                    <span class="text-xs text-gray-400">on bench</span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-sm font-bold text-seafoam-600 uppercase tracking-wider">Completed Repairs</p>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="stat-completed" class="text-3xl font-extrabold text-seafoam-600">0</span>
+                    <span class="text-xs text-gray-400">ready</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Settings Drawer & Help -->
+        <div class="bg-sand-100 p-6 rounded-2xl border border-sand-200 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div class="max-w-2xl">
+                <h3 class="text-lg font-bold text-ocean-900 mb-1 flex items-center gap-2">
+                    <i class="ph-fill ph-database text-seafoam-600"></i> Local Sandbox Enabled
+                </h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    By default, this dashboard reads submitted quotes from your web browser's secure <strong>LocalStorage</strong>. Open your client-facing website in another tab, submit a ticket, and watch it pop up here instantly!
+                </p>
+            </div>
+            <div class="bg-white px-4 py-3 rounded-xl border border-sand-200 text-xs font-semibold text-gray-500 shrink-0">
+                <p class="mb-1">Want to sync devices across the web?</p>
+                <span class="text-seafoam-600">Configure real Firebase keys inside `admin.html`</span>
+            </div>
+        </div>
+
+        <!-- Live Feed Workspace -->
+        <div class="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+            <!-- Header Operations -->
+            <div class="bg-gray-50 p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="ph-fill ph-ticket text-xl text-ocean-900"></i>
+                    <h2 class="font-bold text-ocean-900 text-lg">Active Queue</h2>
+                </div>
+                <!-- Filter Status System -->
+                <div class="flex bg-gray-200/60 p-1 rounded-xl" id="filter-wrapper">
+                    <button onclick="setFilter('all')" id="filter-all" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all bg-white text-ocean-900 shadow-sm">All</button>
+                    <button onclick="setFilter('New')" id="filter-New" class="px-4 py-1.5 rounded-lg text-sm font-bold text-gray-600 transition-all hover:text-ocean-900">New</button>
+                    <button onclick="setFilter('In Progress')" id="filter-Progress" class="px-4 py-1.5 rounded-lg text-sm font-bold text-gray-600 transition-all hover:text-ocean-900">In Progress</button>
+                    <button onclick="setFilter('Completed')" id="filter-Completed" class="px-4 py-1.5 rounded-lg text-sm font-bold text-gray-600 transition-all hover:text-ocean-900">Completed</button>
+                </div>
+            </div>
+
+            <!-- Ticket Container -->
+            <div class="flex-1 p-6 overflow-y-auto max-h-[600px] space-y-4" id="tickets-container">
+                <div class="text-center text-gray-500 py-16">
+                    <i class="ph ph-spinner animate-spin text-4xl mb-3 text-seafoam-500"></i>
+                    <p class="font-medium text-lg">Listening for incoming repair tickets...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-ocean-900 text-white/60 py-6 border-t border-ocean-800 text-center text-xs">
+        <p>&copy; 2026 Island Side Computer Repair. Back-Office Administrative Workspace.</p>
+    </footer>
+
+    <!-- Integration Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // CONFIGURATION AREA
+        // ==========================================
+        // Paste your real Firebase Config object below to switch from sandbox mode to live internet cloud syncing!
+        const FIREBASE_CONFIG = {
+            apiKey: "mock-key", // Change this to your real apiKey
+            projectId: "mock-project",
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'iscr-app-v1';
+        let db = null;
+        let auth = null;
+        let isCloud = false;
+        let activeFilter = 'all';
+        let ticketsList = [];
+
+        // Decide Storage Mechanism
+        if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "mock-key") {
+            try {
+                const app = initializeApp(FIREBASE_CONFIG);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isCloud = true;
+            } catch (err) {
+                console.warn("Could not initiate Cloud Storage. Swapping to Local Sandbox.", err);
+            }
+        }
+
+        // Initialize Authentication & Dashboard
+        async function init() {
+            if (isCloud) {
+                // Update Badge UI
+                const badge = document.getElementById('connection-badge');
+                badge.innerHTML = `<span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></span> Live Cloud Synced`;
+                badge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+
+                try {
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    setupCloudListeners();
+                } catch (err) {
+                    console.error("Cloud Authentication failed, falling back:", err);
+                    setupLocalListeners();
+                }
+            } else {
+                setupLocalListeners();
+            }
+        }
+
+        // Local Sandbox Core (LocalStorage)
+        function setupLocalListeners() {
+            loadLocalTickets();
+            // Live tab sync: Watch for changes in other open browser tabs
+            window.addEventListener('storage', (e) => {
+                if (e.key === `iscr_tickets_${appId}`) {
+                    loadLocalTickets();
+                }
+            });
+        }
+
+        function loadLocalTickets() {
+            const rawData = localStorage.getItem(`iscr_tickets_${appId}`);
+            ticketsList = rawData ? JSON.parse(rawData) : [];
+            // Sort by timestamp (newest first)
+            ticketsList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            renderDashboard();
+        }
+
+        // Firebase Cloud Core
+        function setupCloudListeners() {
+            const collectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
+            onSnapshot(collectionPath, (snapshot) => {
+                ticketsList = [];
+                snapshot.forEach(doc => {
+                    ticketsList.push({ id: doc.id, ...doc.data() });
+                });
+                ticketsList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderDashboard();
+            }, (error) => {
+                console.error("Firebase fetch error, running offline backup:", error);
+                setupLocalListeners();
+            });
+        }
+
+        // Write Back logic (Updates)
+        window.updateTicketStatus = async function(ticketId, newStatus) {
+            if (isCloud) {
+                try {
+                    const ticketRef = doc(db, 'artifacts', appId, 'public', 'data', 'tickets', ticketId);
+                    await updateDoc(ticketRef, { status: newStatus });
+                } catch (err) {
+                    console.error("Could not update cloud ticket:", err);
+                }
+            } else {
+                ticketsList = ticketsList.map(ticket => {
+                    if (ticket.id === ticketId) {
+                        return { ...ticket, status: newStatus };
+                    }
+                    return ticket;
+                });
+                localStorage.setItem(`iscr_tickets_${appId}`, JSON.stringify(ticketsList));
+                renderDashboard();
+            }
+        }
+
+        // Delete logic
+        window.deleteTicket = async function(ticketId) {
+            if (!confirm("Are you sure you want to permanently delete this repair ticket?")) return;
+
+            if (isCloud) {
+                try {
+                    const ticketRef = doc(db, 'artifacts', appId, 'public', 'data', 'tickets', ticketId);
+                    await deleteDoc(ticketRef);
+                } catch (err) {
+                    console.error("Could not delete cloud ticket:", err);
+                }
+            } else {
+                ticketsList = ticketsList.filter(ticket => ticket.id !== ticketId);
+                localStorage.setItem(`iscr_tickets_${appId}`, JSON.stringify(ticketsList));
+                renderDashboard();
+            }
+        }
+
+        // Filter Management
+        window.setFilter = function(status) {
+            activeFilter = status;
+            
+            // Toggle visual class on active filter buttons
+            const buttons = document.querySelectorAll('#filter-wrapper button');
+            buttons.forEach(btn => {
+                btn.className = "px-4 py-1.5 rounded-lg text-sm font-bold text-gray-600 transition-all hover:text-ocean-900";
+            });
+
+            const activeBtn = document.getElementById(status === 'all' ? 'filter-all' : `filter-${status.replace(' ', '')}`);
+            if (activeBtn) {
+                activeBtn.className = "px-4 py-1.5 rounded-lg text-sm font-bold transition-all bg-white text-ocean-900 shadow-sm";
+            }
+
+            renderDashboard();
+        }
+
+        // Render Dashboard Pipeline
+        function renderDashboard() {
+            renderStats();
+            renderTickets();
+        }
+
+        function renderStats() {
+            const total = ticketsList.length;
+            const waiting = ticketsList.filter(t => t.status === 'New' || !t.status).length;
+            const progress = ticketsList.filter(t => t.status === 'In Progress').length;
+            const done = ticketsList.filter(t => t.status === 'Completed').length;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-new').innerText = waiting;
+            document.getElementById('stat-progress').innerText = progress;
+            document.getElementById('stat-completed').innerText = done;
+        }
+
+        function renderTickets() {
+            const container = document.getElementById('tickets-container');
+            const filteredTickets = ticketsList.filter(ticket => {
+                if (activeFilter === 'all') return true;
+                return ticket.status === activeFilter;
+            });
+
+            if (filteredTickets.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-16 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                        <i class="ph ph-tray text-4xl mb-3 text-gray-300"></i>
+                        <p class="font-medium text-lg">No tickets found in this segment</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = filteredTickets.map(ticket => {
+                let badgeColor = "bg-yellow-100 text-yellow-800 border-yellow-200";
+                if (ticket.status === 'In Progress') badgeColor = "bg-blue-100 text-blue-800 border-blue-200";
+                if (ticket.status === 'Completed') badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
+
+                const dateStr = ticket.timestamp ? new Date(ticket.timestamp).toLocaleString([], {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                }) : 'Unknown date';
+
+                return `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col gap-4 hover:shadow-md transition-shadow">
+                        <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div>
+                                <h3 class="font-bold text-ocean-900 text-xl flex items-center gap-2">
+                                    ${ticket.name}
+                                </h3>
+                                <div class="flex flex-wrap gap-4 mt-1">
+                                    <p class="text-sm text-gray-600 font-medium flex items-center gap-1">
+                                        <i class="ph-fill ph-phone text-seafoam-500 text-base"></i>
+                                        <a href="tel:${ticket.phone}" class="hover:text-seafoam-600 underline">${ticket.phone}</a>
+                                    </p>
+                                    ${ticket.email ? `
+                                    <p class="text-sm text-gray-600 font-medium flex items-center gap-1">
+                                        <i class="ph-fill ph-envelope-simple text-seafoam-500 text-base"></i>
+                                        <a href="mailto:${ticket.email}" class="hover:text-seafoam-600 underline">${ticket.email}</a>
+                                    </p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-start sm:items-end gap-1.5 self-stretch sm:self-auto">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${badgeColor}">
+                                    ${ticket.status || 'New'}
+                                </span>
+                                <span class="text-xs text-gray-400 font-medium flex items-center gap-1">
+                                    <i class="ph ph-clock"></i> ${dateStr}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="bg-sand-100/50 p-4 rounded-xl border border-sand-200/50 text-gray-700 text-sm">
+                            <p class="font-bold text-xs text-sand-800 uppercase tracking-widest mb-1.5">Problem Details</p>
+                            <p class="text-base whitespace-pre-wrap leading-relaxed">${ticket.issue}</p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 justify-end pt-3 border-t border-gray-100">
+                            ${ticket.status !== 'In Progress' && ticket.status !== 'Completed' ? `
+                                <button onclick="updateTicketStatus('${ticket.id}', 'In Progress')" class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 shadow-sm hover:shadow">
+                                    <i class="ph ph-wrench"></i> Start Work
+                                </button>
+                            ` : ''}
+                            
+                            ${ticket.status !== 'Completed' ? `
+                                <button onclick="updateTicketStatus('${ticket.id}', 'Completed')" class="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 shadow-sm hover:shadow">
+                                    <i class="ph ph-check-circle"></i> Complete
+                                </button>
+                            ` : ''}
+
+                            <button onclick="deleteTicket('${ticket.id}')" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 ml-auto">
+                                <i class="ph ph-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Start App
+        init();
+    </script>
+</body>
+</html>
