@@ -29,6 +29,30 @@
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
+    <!-- Security Gateway Overlay -->
+    <div id="auth-overlay" class="fixed inset-0 z-50 bg-ocean-900 flex flex-col items-center justify-center px-4 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
+            <div class="bg-seafoam-50 text-seafoam-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="ph-fill ph-lock-key text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-ocean-900 mb-2">Admin Access</h2>
+            <p class="text-gray-500 text-sm mb-6">Please enter the dashboard password to continue.</p>
+            
+            <form id="login-form" class="space-y-4 text-left">
+                <div>
+                    <input type="password" id="admin-password" placeholder="Enter password..." class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-seafoam-500 focus:border-seafoam-500 outline-none text-lg">
+                    <p id="login-error" class="text-red-500 text-xs font-bold mt-2 hidden"><i class="ph-fill ph-warning-circle"></i> Incorrect password</p>
+                </div>
+                <button type="submit" class="w-full bg-seafoam-500 hover:bg-seafoam-600 text-white font-bold py-3 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
+                    Unlock Dashboard <i class="ph-bold ph-arrow-right"></i>
+                </button>
+            </form>
+            <div class="mt-6 border-t border-gray-100 pt-4">
+                <a href="index.html" class="text-sm font-medium text-gray-500 hover:text-ocean-900 transition-colors">← Back to Main Site</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation Bar -->
     <header class="bg-ocean-900 text-white shadow-md py-4 px-6 shrink-0">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -385,8 +409,47 @@
             }).join('');
         }
 
-        // Start App
-        init();
+        // ==========================================
+        // Security Gateway (Client-Side Protection)
+        // ==========================================
+        const ADMIN_PASSWORD = "admin"; // <--- CHANGE YOUR PASSWORD HERE!
+        
+        const authOverlay = document.getElementById('auth-overlay');
+        const loginForm = document.getElementById('login-form');
+        const passInput = document.getElementById('admin-password');
+        const loginError = document.getElementById('login-error');
+
+        // Check if unlocked in this browser session
+        if (sessionStorage.getItem('iscr_admin_unlocked') === 'true') {
+            authOverlay.style.display = 'none';
+            init(); // Start App immediately
+        } else {
+            // Lock background scrolling while overlay is active
+            document.body.style.overflow = 'hidden';
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (passInput.value === ADMIN_PASSWORD) {
+                // Success: Unlock Dashboard
+                sessionStorage.setItem('iscr_admin_unlocked', 'true');
+                authOverlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    authOverlay.style.display = 'none';
+                    document.body.style.overflow = 'auto'; // Restore scroll
+                    init(); // Load database
+                }, 300);
+            } else {
+                // Failure: Show error
+                loginError.classList.remove('hidden');
+                passInput.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                passInput.value = ''; // clear input
+                setTimeout(() => {
+                    loginError.classList.add('hidden');
+                    passInput.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                }, 2500);
+            }
+        });
     </script>
 </body>
 </html>
