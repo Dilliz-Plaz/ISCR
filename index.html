@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Island Side Computer Repair | Campbell River, BC</title>
+    <meta name="description" content="Honest, reliable computer repair in Campbell River. From fixing slow home laptops to securing local business networks on Vancouver Island.">
+    <meta name="keywords" content="computer repair Campbell River, fix slow laptop Vancouver Island, managed IT North Island, virus removal, data recovery">
+    
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Leaflet Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        ocean: {
+                            900: '#0B2031', // Deep ocean
+                            800: '#143854', // Medium ocean
+                        },
+                        seafoam: {
+                            500: '#2A9D8F', // Action green
+                            600: '#218277', // Darker action
+                            50: '#E9F5F4',  // Light tint
+                        },
+                        sand: {
+                            100: '#F5F3ED', // Driftwood/sand background
+                            200: '#E6E1D3', // Darker sand border
+                            800: '#5C5441', // Sand text
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base Accessibility Styles */
+        body {
+            font-size: 18px; /* High readability baseline */
+            line-height: 1.6;
+            color: #1f2937;
+        }
+        h1, h2, h3, h4 {
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+        .text-balance {
+            text-wrap: balance;
+        }
+        /* Custom form focus states for accessibility */
+        input:focus, textarea:focus {
+            outline: 3px solid #2A9D8F;
+            outline-offset: 2px;
+        }
+        /* Hide scrollbar for testimonials if needed */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Functional Enhancements CSS */
+        .carousel-track {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay {
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800 font-sans antialiased">
+
+    <header class="sticky top-0 z-50 w-full bg-white shadow-md border-b border-sand-200 transition-all duration-300" id="header">
+        <!-- Top Action Bar for Desktop -->
+        <div class="hidden md:block bg-ocean-900 text-white text-sm py-2">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <span class="flex items-center"><i class="ph ph-map-pin mr-2 text-seafoam-500 text-lg"></i> Campbell River, BC</span>
+                    <span class="flex items-center"><i class="ph ph-clock mr-2 text-seafoam-500 text-lg"></i> Mon-Fri: 9am - 5pm | Sat: 10am - 2pm</span>
+                </div>
+                <div class="font-medium text-seafoam-500">
+                    Seniors Discount Available
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Navigation -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#" class="flex items-center gap-2 group">
+                        <div class="bg-ocean-900 text-white p-2 rounded-lg group-hover:bg-seafoam-500 transition-colors">
+                            <i class="ph ph-desktop text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="block font-bold text-xl leading-tight text-ocean-900 tracking-tight">Island Side</span>
+                            <span class="block text-sm font-semibold text-seafoam-600 leading-tight">Computer Repair</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Desktop Menu -->
+                <nav class="hidden md:flex space-x-8 items-center">
+                    <a href="#services-home" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Home & Family</a>
+                    <a href="#reviews" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Reviews</a>
+                    <a href="#contact" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Location</a>
+                    <a href="tel:2505550199" class="bg-ocean-900 hover:bg-ocean-800 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        <i class="ph-fill ph-phone"></i>
+                        (250) 555-0199
+                    </a>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-ocean-900 hover:text-seafoam-600 focus:outline-none p-2" aria-label="Toggle menu">
+                        <i class="ph ph-list text-3xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-sand-200">
+            <div class="px-4 pt-2 pb-6 space-y-2 shadow-inner">
+                <a href="#services-home" class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-seafoam-600 hover:bg-seafoam-50">Home & Family Services</a>
+                <a href="#contact" class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-seafoam-600 hover:bg-seafoam-50">Location & Hours</a>
+                <a href="tel:2505550199" class="mt-4 w-full bg-ocean-900 text-white px-6 py-4 rounded-xl font-bold flex justify-center items-center gap-2 text-lg">
+                    <i class="ph-fill ph-phone"></i>
+                    Call (250) 555-0199
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="relative bg-ocean-900 text-white overflow-hidden">
+            <!-- Background Decoration (Coastal Abstract) -->
+            <div class="absolute inset-0 opacity-20">
+                <!-- Using a gradient to simulate deep water to surface -->
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-ocean-800"></div>
+                <!-- Abstract waves -->
+                <svg class="absolute bottom-0 w-full h-auto text-seafoam-500 opacity-30" viewBox="0 0 1440 320" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,160C672,160,768,192,864,213.3C960,235,1056,245,1152,229.3C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                </svg>
+            </div>
+
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 flex flex-col items-center text-center">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ocean-800 border border-ocean-800/50 text-seafoam-500 font-semibold mb-8">
+                    <i class="ph-fill ph-map-pin"></i> Proudly serving Campbell River & North Island
+                </div>
+                
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 text-balance max-w-4xl">
+                    Keeping Campbell River Connected. <span class="text-seafoam-500 block mt-2">Honest, Reliable Computer Repair.</span>
+                </h1>
+                
+                <p class="text-xl sm:text-2xl text-gray-300 max-w-3xl mb-10 text-balance leading-relaxed">
+                    From fixing slow laptops to rescuing lost data—we manage your home tech so you can focus on what matters.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    <button onclick="openQuoteModal()" class="bg-seafoam-500 hover:bg-seafoam-600 text-white text-xl font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-calculator"></i> Quick Quote
+                    </button>
+                    <a href="#services-home" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xl font-bold py-4 px-8 rounded-xl backdrop-blur-sm transition-all flex items-center justify-center gap-2">
+                        View Services <i class="ph-bold ph-arrow-down"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-sand-100 py-16 border-b border-sand-200">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <i class="ph-fill ph-quotes text-5xl text-seafoam-500/30 mb-4 inline-block"></i>
+                <blockquote class="text-2xl sm:text-3xl font-medium text-ocean-900 text-balance leading-snug">
+                    "No hidden fees, no tech-babble, and dedicated seniors discounts. At ISCR, we treat our clients like neighbors, not support tickets."
+                </blockquote>
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    <div class="h-1 w-12 bg-seafoam-500 rounded-full"></div>
+                    <p class="font-bold text-sand-800 uppercase tracking-widest text-sm">The ISCR Community Promise</p>
+                    <div class="h-1 w-12 bg-seafoam-500 rounded-full"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="services-home" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-16 max-w-3xl">
+                    <div class="flex items-center gap-2 text-seafoam-600 font-bold mb-3">
+                        <i class="ph-fill ph-house text-2xl"></i> Everyday Users & Families
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-ocean-900 mb-4">Your Screen & Devices</h2>
+                    <p class="text-lg text-gray-600">Patient, jargon-free support for your personal technology. We speak plain English and take the time to make sure you understand your devices.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Service Card 1 -->
+                    <div class="bg-white border-2 border-sand-100 p-8 rounded-2xl hover:border-seafoam-500 hover:shadow-lg transition-all group">
+                        <div class="bg-seafoam-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6 group-hover:bg-seafoam-500 group-hover:text-white transition-colors">
+                            <i class="ph ph-laptop text-4xl text-seafoam-600 group-hover:text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-ocean-900 mb-3">Laptop & Desktop Repair</h3>
+                        <p class="text-gray-600">Mac and PC screen replacements, battery swaps, and physical cleanups. If it's physically broken, we can put it back together.</p>
+                    </div>
+
+                    <!-- Service Card 2 -->
+                    <div class="bg-white border-2 border-sand-100 p-8 rounded-2xl hover:border-seafoam-500 hover:shadow-lg transition-all group">
+                        <div class="bg-seafoam-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6 group-hover:bg-seafoam-500 group-hover:text-white transition-colors">
+                            <i class="ph ph-shield-warning text-4xl text-seafoam-600 group-hover:text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-ocean-900 mb-3">Virus & Malware Removal</h3>
+                        <p class="text-gray-600">Computer running slow or acting strange? We'll thoroughly clean out digital junk, pop-ups, and install bulletproof protection.</p>
+                    </div>
+
+                    <!-- Service Card 3 -->
+                    <div class="bg-white border-2 border-sand-100 p-8 rounded-2xl hover:border-seafoam-500 hover:shadow-lg transition-all group">
+                        <div class="bg-seafoam-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6 group-hover:bg-seafoam-500 group-hover:text-white transition-colors">
+                            <i class="ph ph-lifebuoy text-4xl text-seafoam-600 group-hover:text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-ocean-900 mb-3">Data Rescue & Recovery</h3>
+                        <p class="text-gray-600">Don't panic. We specialize in safely recovering your precious family photos, tax documents, and personal files from dead or dying hard drives.</p>
+                    </div>
+
+                    <!-- Service Card 4 -->
+                    <div class="bg-white border-2 border-sand-100 p-8 rounded-2xl hover:border-seafoam-500 hover:shadow-lg transition-all group">
+                        <div class="bg-seafoam-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6 group-hover:bg-seafoam-500 group-hover:text-white transition-colors">
+                            <i class="ph ph-plugs text-4xl text-seafoam-600 group-hover:text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-ocean-900 mb-3">Personal Tech Setup</h3>
+                        <p class="text-gray-600">Bought a new iPad, printer, or computer? We'll get it set up right, migrate your old data smoothly, and show you how to use it.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="reviews" class="py-20 bg-sand-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-ocean-900 mb-4">Trusted by Campbell River</h2>
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">Don't just take our word for it. Here is what your neighbors are saying.</p>
+                </div>
+
+                <!-- Functional Carousel Container -->
+                <div class="overflow-hidden relative px-2 sm:px-12">
+                    <div id="carousel-track" class="flex gap-8 carousel-track">
+                        <!-- Review 1: Senior focus -->
+                        <div class="min-w-[100%] md:min-w-[calc(33.333%-1.33rem)] bg-white p-8 rounded-2xl shadow-sm border border-sand-200">
+                            <div class="flex text-yellow-400 mb-4 text-xl">
+                                <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+                            </div>
+                            <p class="text-gray-700 italic mb-6">"I am in my 70s and computers confuse me. The team at ISCR didn't make me feel silly. They removed the viruses on my laptop and set it up so I can safely talk to my grandkids again. Extremely patient!"</p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-seafoam-100 rounded-full flex items-center justify-center text-seafoam-600 font-bold text-xl">M</div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900">Margaret H.</h4>
+                                    <p class="text-sm text-gray-500">Local Resident</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review 2: Home office focus -->
+                        <div class="min-w-[100%] md:min-w-[calc(33.333%-1.33rem)] bg-white p-8 rounded-2xl shadow-sm border border-sand-200">
+                            <div class="flex text-yellow-400 mb-4 text-xl">
+                                <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+                            </div>
+                            <p class="text-gray-700 italic mb-6">"When my home office PC crashed right before tax season, ISCR was there within the hour. They recovered my financial documents and upgraded my security. Fast and professional."</p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-ocean-100 rounded-full flex items-center justify-center text-ocean-900 font-bold text-xl">D</div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900">Dave T.</h4>
+                                    <p class="text-sm text-gray-500">Local Resident</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review 3: General focus -->
+                        <div class="min-w-[100%] md:min-w-[calc(33.333%-1.33rem)] bg-white p-8 rounded-2xl shadow-sm border border-sand-200">
+                            <div class="flex text-yellow-400 mb-4 text-xl">
+                                <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+                            </div>
+                            <p class="text-gray-700 italic mb-6">"Thought my Mac was completely dead after I spilled coffee on it. Apple wanted a fortune. ISCR fixed it locally for half the price and saved all my university documents. Lifesavers!"</p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-sand-200 rounded-full flex items-center justify-center text-sand-800 font-bold text-xl">S</div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900">Sarah J.</h4>
+                                    <p class="text-sm text-gray-500">Student</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review 4: Additional slide -->
+                        <div class="min-w-[100%] md:min-w-[calc(33.333%-1.33rem)] bg-white p-8 rounded-2xl shadow-sm border border-sand-200">
+                            <div class="flex text-yellow-400 mb-4 text-xl">
+                                <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+                            </div>
+                            <p class="text-gray-700 italic mb-6">"Set up the Wi-Fi at our new home. Coverage is excellent even out in the backyard and the garage. Professional crew, arrived on time, no mess left behind. Highly recommend."</p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-seafoam-100 rounded-full flex items-center justify-center text-seafoam-600 font-bold text-xl">R</div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900">Robert K.</h4>
+                                    <p class="text-sm text-gray-500">Homeowner</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Carousel Controls -->
+                    <button onclick="moveCarousel(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-ocean-900 hover:bg-seafoam-500 hover:text-white transition-colors z-10" aria-label="Previous">
+                        <i class="ph-bold ph-caret-left text-xl"></i>
+                    </button>
+                    <button onclick="moveCarousel(1)" class="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-ocean-900 hover:bg-seafoam-500 hover:text-white transition-colors z-10" aria-label="Next">
+                        <i class="ph-bold ph-caret-right text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                    
+                    <!-- Contact Information & Form -->
+                    <div>
+                        <h2 class="text-3xl sm:text-4xl font-bold text-ocean-900 mb-6">Let's Get Your Tech Fixed.</h2>
+                        <p class="text-lg text-gray-600 mb-8">Drop by our shop, give us a call, or fill out the form below to request a service ticket. We aim to reply to all web inquiries within 2 hours during business hours.</p>
+
+                        <div class="space-y-6 mb-10">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-seafoam-50 rounded-xl flex items-center justify-center flex-shrink-0 text-seafoam-600 text-2xl">
+                                    <i class="ph-fill ph-map-pin"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900 text-xl">Visit the Shop</h4>
+                                    <p class="text-gray-600">1234 Island Highway<br>Campbell River, BC V9W 2C3</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-seafoam-50 rounded-xl flex items-center justify-center flex-shrink-0 text-seafoam-600 text-2xl">
+                                    <i class="ph-fill ph-phone"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900 text-xl">Call Us Directly</h4>
+                                    <p class="text-gray-600 text-lg"><a href="tel:2505550199" class="hover:text-seafoam-600">(250) 555-0199</a></p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-seafoam-50 rounded-xl flex items-center justify-center flex-shrink-0 text-seafoam-600 text-2xl">
+                                    <i class="ph-fill ph-clock"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900 text-xl">Store Hours</h4>
+                                    <p class="text-gray-600">Monday - Friday: 9:00 AM - 5:00 PM<br>Saturday: 10:00 AM - 2:00 PM<br>Sunday: Closed</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Form (Simulated Backend) -->
+                        <div class="bg-sand-100 p-8 rounded-2xl border border-sand-200">
+                            <h3 class="text-2xl font-bold text-ocean-900 mb-6">Start a Repair Ticket</h3>
+                            <form id="contact-form" class="space-y-4">
+                                <div>
+                                    <label for="name" class="block text-sm font-bold text-ocean-900 mb-1">Full Name</label>
+                                    <input type="text" id="name" required minlength="2" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-seafoam-500 focus:border-seafoam-500 transition-all text-lg">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-bold text-ocean-900 mb-1">Email Address</label>
+                                    <input type="email" id="email" required placeholder="your@email.com" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-seafoam-500 focus:border-seafoam-500 transition-all text-lg">
+                                </div>
+                                <div>
+                                    <label for="phone" class="block text-sm font-bold text-ocean-900 mb-1">Phone Number</label>
+                                    <input type="tel" id="phone" required pattern="[0-9\-\+\s\(\)]*" title="Please enter a valid phone number" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-seafoam-500 focus:border-seafoam-500 transition-all text-lg">
+                                </div>
+                                <div>
+                                    <label for="issue" class="block text-sm font-bold text-ocean-900 mb-1">Briefly describe the issue</label>
+                                    <textarea id="issue" rows="4" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-seafoam-500 focus:border-seafoam-500 transition-all text-lg resize-none placeholder-gray-400" placeholder="e.g., My laptop won't turn on, or Need network setup for my office"></textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-ocean-900 hover:bg-ocean-800 text-white text-xl font-bold py-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    Send Request <i class="ph-bold ph-paper-plane-right"></i>
+                                </button>
+                                
+                                <!-- Success Message Container -->
+                                <div id="form-message" class="hidden mt-4 p-4 bg-seafoam-50 text-seafoam-600 rounded-lg border border-seafoam-500 font-medium flex items-center gap-2">
+                                    <i class="ph-fill ph-check-circle text-2xl"></i> Ticket submitted! We'll call you shortly.
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Map / Service Area -->
+                    <div class="h-full min-h-[400px] bg-sand-200 rounded-2xl overflow-hidden relative border border-sand-200 flex flex-col z-0">
+                        <!-- Functional Leaflet Map -->
+                        <div id="service-map" class="absolute inset-0 z-0"></div>
+
+                        <!-- Service Radius Info Box (Overlay) -->
+                        <div class="mt-auto relative z-10 bg-white/95 backdrop-blur-sm p-6 border-t border-sand-200 pointer-events-none">
+                            <h4 class="font-bold text-ocean-900 mb-2 flex items-center gap-2">
+                                <i class="ph-fill ph-navigation-arrow text-seafoam-500"></i> Our Service Radius
+                            </h4>
+                            <p class="text-gray-600 text-sm leading-relaxed">
+                                Our shop is located in Campbell River, but we proudly provide on-site business support and secure networking services across the North Island, from <strong>Courtenay up to Sayward and Port Hardy</strong>.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Functional Quick Quote Modal (Hidden by default) -->
+        <div id="quote-modal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-overlay bg-ocean-900/60 p-4 opacity-0 transition-opacity duration-300">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 transition-transform duration-300" id="quote-modal-content">
+                <div class="bg-ocean-900 text-white p-6 flex justify-between items-center">
+                    <h3 class="text-2xl font-bold">Repair Estimator</h3>
+                    <button onclick="closeQuoteModal()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="ph-bold ph-x text-2xl"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-600 mb-6 text-sm">Select your device and issue for a rough estimate. Final quotes provided after physical inspection.</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-ocean-900 mb-1">Device Type</label>
+                            <select id="quote-device" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-seafoam-500 outline-none bg-white text-lg">
+                                <option value="" disabled selected>Select device...</option>
+                                <option value="pc-desktop">Windows Desktop</option>
+                                <option value="pc-laptop">Windows Laptop</option>
+                                <option value="mac">Macbook / iMac</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-ocean-900 mb-1">Primary Issue</label>
+                            <select id="quote-issue" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-seafoam-500 outline-none bg-white text-lg opacity-50 cursor-not-allowed" disabled>
+                                <option value="" disabled selected>Select issue...</option>
+                                <option value="virus">Virus / Running Slow</option>
+                                <option value="screen">Broken Screen</option>
+                                <option value="data">Data Recovery</option>
+                                <option value="setup">New Setup / Transfer</option>
+                            </select>
+                        </div>
+                        
+                        <div id="quote-result" class="hidden mt-6 p-4 bg-seafoam-50 border border-seafoam-200 rounded-xl">
+                            <p class="text-sm text-gray-500 font-medium mb-1">Estimated Cost:</p>
+                            <p id="quote-price" class="text-3xl font-bold text-ocean-900 mb-2">$0</p>
+                            <p id="quote-note" class="text-sm text-gray-600 italic"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 bg-sand-100 border-t border-sand-200 flex justify-end gap-3">
+                    <button onclick="closeQuoteModal()" class="px-6 py-2 text-gray-600 font-medium hover:text-ocean-900 transition-colors">Cancel</button>
+                    <a href="#contact" onclick="bookFromQuote()" class="px-6 py-2 bg-seafoam-500 hover:bg-seafoam-600 text-white rounded-lg font-bold shadow-md transition-colors">Book Now</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard Modal (Hidden Cloud UI) -->
+        <div id="admin-modal" class="fixed inset-0 z-[200] hidden items-center justify-center modal-overlay bg-ocean-900/90 p-4 opacity-0 transition-opacity duration-300">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="admin-modal-content">
+                <div class="bg-ocean-900 text-white p-6 flex justify-between items-center shrink-0">
+                    <h3 class="text-2xl font-bold flex items-center gap-2"><i class="ph-fill ph-lock-key"></i> Live Service Tickets Dashboard</h3>
+                    <button id="close-admin-btn" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="ph-bold ph-x text-2xl"></i>
+                    </button>
+                </div>
+                <div class="p-6 bg-sand-100 border-b border-sand-200 shrink-0">
+                    <p class="text-ocean-900 font-medium">Welcome to the back-office. Here are your live customer repair requests.</p>
+                </div>
+                <div class="p-6 overflow-y-auto flex-1 bg-gray-50">
+                    <div id="admin-tickets-container" class="space-y-4">
+                        <div class="text-center text-gray-500 py-8"><i class="ph ph-spinner animate-spin text-3xl mb-2"></i><br>Loading secure tickets...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-ocean-900 text-white border-t border-ocean-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <!-- Brand col -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="bg-seafoam-500 text-white p-1.5 rounded-lg">
+                            <i class="ph ph-desktop text-xl"></i>
+                        </div>
+                        <span class="font-bold text-xl tracking-tight">Island Side Computer Repair</span>
+                    </div>
+                    <p class="text-gray-400 max-w-sm mb-6">
+                        Honest, reliable, community-first tech support for Vancouver Island. No tech-babble, just solutions.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center hover:bg-seafoam-500 transition-colors" aria-label="Facebook">
+                            <i class="ph-fill ph-facebook-logo text-xl"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center hover:bg-seafoam-500 transition-colors" aria-label="Google Reviews">
+                            <i class="ph-fill ph-google-logo text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Links col -->
+                <div>
+                    <h4 class="font-bold mb-4 text-seafoam-500 uppercase tracking-wider text-sm">Services</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#services-home" class="hover:text-white transition-colors">Home PC Repair</a></li>
+                        <li><a href="#services-home" class="hover:text-white transition-colors">Virus Removal</a></li>
+                        <li><a href="#services-home" class="hover:text-white transition-colors">Data Recovery</a></li>
+                        <li><a href="#services-home" class="hover:text-white transition-colors">New Device Setup</a></li>
+                    </ul>
+                </div>
+
+                <!-- Legal col -->
+                <div>
+                    <h4 class="font-bold mb-4 text-seafoam-500 uppercase tracking-wider text-sm">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#reviews" class="hover:text-white transition-colors">Testimonials</a></li>
+                        <li><a href="#contact" class="hover:text-white transition-colors">Contact & Hours</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><button id="admin-login-btn" class="hover:text-white transition-colors text-left flex items-center gap-2"><i class="ph-fill ph-lock-key"></i> Admin Dashboard</button></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-ocean-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                <p>&copy; 2026 Island Side Computer Repair (ISCR). All rights reserved.</p>
+                <p class="mt-2 md:mt-0">Serving Campbell River, BC & Vancouver Island.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        
+        // Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        const header = document.getElementById('header');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+            // Change icon
+            const icon = btn.querySelector('i');
+            if (menu.classList.contains('hidden')) {
+                icon.classList.remove('ph-x');
+                icon.classList.add('ph-list');
+            } else {
+                icon.classList.remove('ph-list');
+                icon.classList.add('ph-x');
+            }
+        });
+
+        // Close mobile menu on link click
+        menu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+                btn.querySelector('i').classList.remove('ph-x');
+                btn.querySelector('i').classList.add('ph-list');
+            });
+        });
+
+        // Form submission is now securely handled by the Firebase module below.
+
+        // Sticky Header scroll effect
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                header.classList.add('shadow-lg');
+            } else {
+                header.classList.remove('shadow-lg');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize map centered on Campbell River
+            const map = L.map('service-map', {
+                zoomControl: false,
+                scrollWheelZoom: false // Prevent accidental scrolling while navigating page
+            }).setView([50.0246, -125.2475], 10);
+            
+            L.control.zoom({ position: 'topright' }).addTo(map);
+
+            // Add clean Voyager map tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add custom styled marker for ISCR Shop
+            const shopIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: #2A9D8F; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2); border: 3px solid white;"><i class="ph-fill ph-storefront" style="font-size: 18px;"></i></div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+
+            L.marker([50.0246, -125.2475], { icon: shopIcon }).addTo(map)
+                .bindPopup('<b style="color: #0B2031; font-size:14px;">Island Side Computer Repair</b><br>1234 Island Hwy.<br><a href="#contact" style="color:#2A9D8F; font-weight:bold;">Get Directions</a>');
+
+            // Draw Service Area Radius
+            L.circle([50.0246, -125.2475], {
+                color: '#2A9D8F',
+                fillColor: '#2A9D8F',
+                fillOpacity: 0.15,
+                radius: 40000 // 40km radius approx
+            }).addTo(map);
+        });
+
+        let currentSlide = 0;
+        function moveCarousel(direction) {
+            const track = document.getElementById('carousel-track');
+            const slides = track.children;
+            const isDesktop = window.innerWidth >= 768;
+            const maxSlides = isDesktop ? slides.length - 3 : slides.length - 1;
+            
+            currentSlide += direction;
+            
+            // Boundary constraints
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide > maxSlides) currentSlide = maxSlides;
+
+            const slideWidth = slides[0].offsetWidth;
+            const gap = 32; // Matches Tailwind 'gap-8'
+            const moveAmount = currentSlide * (slideWidth + gap);
+            
+            track.style.transform = `translateX(-${moveAmount}px)`;
+        }
+
+        // Reset carousel on window resize to prevent layout breaking
+        window.addEventListener('resize', () => {
+            currentSlide = 0;
+            document.getElementById('carousel-track').style.transform = `translateX(0px)`;
+        });
+
+        const quoteModal = document.getElementById('quote-modal');
+        const quoteContent = document.getElementById('quote-modal-content');
+        const deviceSelect = document.getElementById('quote-device');
+        const issueSelect = document.getElementById('quote-issue');
+        const resultDiv = document.getElementById('quote-result');
+        const priceText = document.getElementById('quote-price');
+        const noteText = document.getElementById('quote-note');
+
+        // Dynamic Pricing Data
+        const pricing = {
+            'pc-desktop': { 'virus': { p: '$99', n: 'Flat rate removal & system tune-up.' }, 'screen': { p: 'N/A', n: 'We only repair internal desktop hardware.' }, 'data': { p: '$149+', n: 'Level 1 Data Recovery.' }, 'setup': { p: '$89', n: 'Includes secure data transfer.' } },
+            'pc-laptop': { 'virus': { p: '$99', n: 'Flat rate removal & system tune-up.' }, 'screen': { p: '$150 - $250', n: 'Depends on specific screen model (parts + labor).' }, 'data': { p: '$149+', n: 'Level 1 Data Recovery.' }, 'setup': { p: '$89', n: 'Includes secure data transfer.' } },
+            'mac': { 'virus': { p: '$120', n: 'Malware removal & macOS optimization.' }, 'screen': { p: '$300+', n: 'Apple genuine parts required.' }, 'data': { p: '$199+', n: 'Advanced APFS recovery required.' }, 'setup': { p: '$119', n: 'Includes iCloud & TimeMachine setup.' } }
+        };
+
+        function openQuoteModal() {
+            quoteModal.classList.remove('hidden');
+            quoteModal.classList.add('flex');
+            // Slight delay to allow CSS transitions to trigger
+            setTimeout(() => {
+                quoteModal.classList.remove('opacity-0');
+                quoteContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeQuoteModal() {
+            quoteModal.classList.add('opacity-0');
+            quoteContent.classList.add('scale-95');
+            setTimeout(() => {
+                quoteModal.classList.add('hidden');
+                quoteModal.classList.remove('flex');
+                // Reset states
+                deviceSelect.value = "";
+                issueSelect.value = "";
+                issueSelect.disabled = true;
+                issueSelect.classList.add('opacity-50', 'cursor-not-allowed');
+                resultDiv.classList.add('hidden');
+            }, 300);
+        }
+
+        // Close when clicking overlay
+        quoteModal.addEventListener('click', (e) => {
+            if (e.target === quoteModal) closeQuoteModal();
+        });
+
+        // Handle cascading dropdown logic
+        deviceSelect.addEventListener('change', () => {
+            issueSelect.disabled = false;
+            issueSelect.classList.remove('opacity-50', 'cursor-not-allowed');
+            if(issueSelect.value) calculateQuote();
+        });
+
+        issueSelect.addEventListener('change', calculateQuote);
+
+        function calculateQuote() {
+            const device = deviceSelect.value;
+            const issue = issueSelect.value;
+            if (device && issue && pricing[device] && pricing[device][issue]) {
+                const quote = pricing[device][issue];
+                priceText.innerText = quote.p;
+                noteText.innerText = quote.n;
+                resultDiv.classList.remove('hidden');
+            }
+        }
+
+        // Smart Quote transfer to Form
+        function bookFromQuote() {
+            const issueText = issueSelect.options[issueSelect.selectedIndex]?.text;
+            const deviceText = deviceSelect.options[deviceSelect.selectedIndex]?.text;
+            const price = priceText.innerText;
+            
+            if (issueText && deviceText) {
+                const issueBox = document.getElementById('issue');
+                issueBox.value = `I would like to book a repair for my ${deviceText}.\n\nIssue: ${issueText}\nEstimated Quote: ${price}`;
+                // Quick visual pulse to show it filled
+                issueBox.classList.add('ring-2', 'ring-seafoam-500');
+                setTimeout(() => issueBox.classList.remove('ring-2', 'ring-seafoam-500'), 1500);
+            }
+            closeQuoteModal();
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "mock-key",
+            projectId: "mock-project",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let currentUser = null;
+
+        // Make backend management functions available globally for inline HTML event handlers
+        window.updateTicketStatus = async function(ticketId, newStatus) {
+            if (!currentUser) return;
+            try {
+                const ticketRef = doc(db, 'artifacts', appId, 'public', 'data', 'tickets', ticketId);
+                await updateDoc(ticketRef, { status: newStatus });
+            } catch (error) {
+                console.error("Error updating ticket:", error);
+            }
+        };
+
+        window.deleteTicket = async function(ticketId) {
+            if (!currentUser) return;
+            // Using a custom UI confirm pattern would be ideal, but for immediate backend functionality we execute the delete
+            try {
+                const ticketRef = doc(db, 'artifacts', appId, 'public', 'data', 'tickets', ticketId);
+                await deleteDoc(ticketRef);
+            } catch (error) {
+                console.error("Error deleting ticket:", error);
+            }
+        };
+
+        // Secure Authentication
+        async function init() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = cred.user;
+                } else {
+                    const cred = await signInAnonymously(auth);
+                    currentUser = cred.user;
+                }
+                
+                setupFormHandler();
+                setupAdminDashboard();
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        }
+
+        function setupFormHandler() {
+            const form = document.getElementById('contact-form');
+            if (!form) return;
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!currentUser) return; // Guard clause requiring auth
+
+                const nameInput = document.getElementById('name').value;
+                const emailInput = document.getElementById('email').value;
+                const phoneInput = document.getElementById('phone').value;
+                const issueInput = document.getElementById('issue').value;
+                
+                const btn = form.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                
+                // Loading UI
+                btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Sending securely...';
+                btn.disabled = true;
+                btn.classList.add('opacity-75');
+
+                try {
+                    // Save to Public Data collection so Admin can see all submissions
+                    const ticketsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
+                    await addDoc(ticketsRef, {
+                        name: nameInput,
+                        email: emailInput,
+                        phone: phoneInput,
+                        issue: issueInput,
+                        timestamp: new Date().toISOString(),
+                        status: 'New'
+                    });
+
+                    // Success UI Sequence
+                    form.querySelectorAll('div:not(#form-message)').forEach(el => el.style.display = 'none');
+                    btn.style.display = 'none';
+                    const msg = document.getElementById('form-message');
+                    msg.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        form.reset();
+                        form.querySelectorAll('div:not(#form-message)').forEach(el => el.style.display = 'block');
+                        btn.style.display = 'flex';
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-75');
+                        msg.classList.add('hidden');
+                    }, 5000);
+
+                } catch (err) {
+                    console.error("Database connection error: ", err);
+                    btn.innerHTML = 'Error Connecting. Try Again.';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-75');
+                    }, 3000);
+                }
+            });
+        }
+
+        function setupAdminDashboard() {
+            const adminBtn = document.getElementById('admin-login-btn');
+            const closeAdminBtn = document.getElementById('close-admin-btn');
+            const adminModal = document.getElementById('admin-modal');
+            const adminContent = document.getElementById('admin-modal-content');
+            const ticketsContainer = document.getElementById('admin-tickets-container');
+            
+            let unsubscribe = null;
+
+            function openAdmin() {
+                adminModal.classList.remove('hidden');
+                adminModal.classList.add('flex');
+                
+                // Trigger transition
+                setTimeout(() => {
+                    adminModal.classList.remove('opacity-0');
+                    adminContent.classList.remove('scale-95');
+                }, 10);
+
+                if (!currentUser) {
+                    ticketsContainer.innerHTML = `<div class="text-red-500 text-center p-4">Not Authenticated.</div>`;
+                    return;
+                }
+                
+                // Fetch Live Data stream
+                const ticketsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
+                unsubscribe = onSnapshot(ticketsRef, (snapshot) => {
+                    const tickets = [];
+                    snapshot.forEach((doc) => {
+                        tickets.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    // Client-side sort by timestamp (newest first) to avoid missing index errors
+                    tickets.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    
+                    renderTickets(tickets);
+                }, (error) => {
+                    console.error("Live Feed Error:", error);
+                    ticketsContainer.innerHTML = `<div class="text-red-500 text-center p-4">Failed to load live tickets.</div>`;
+                });
+            }
+
+            function closeAdmin() {
+                adminModal.classList.add('opacity-0');
+                adminContent.classList.add('scale-95');
+                setTimeout(() => {
+                    adminModal.classList.add('hidden');
+                    adminModal.classList.remove('flex');
+                }, 300);
+                
+                // Stop listening to database updates when modal is closed
+                if (unsubscribe) unsubscribe();
+            }
+
+            function renderTickets(tickets) {
+                if (tickets.length === 0) {
+                    ticketsContainer.innerHTML = `<div class="text-center text-gray-500 py-8 bg-white rounded-xl shadow-sm border border-sand-200">
+                        <i class="ph-duotone ph-tray text-4xl mb-3 text-gray-300"></i>
+                        <p>No repair tickets received yet.</p>
+                    </div>`;
+                    return;
+                }
+                
+                ticketsContainer.innerHTML = tickets.map(ticket => {
+                    // Status Badge Styling Logic
+                    let statusColor = "bg-seafoam-100 text-seafoam-600"; // Default New
+                    if (ticket.status === 'In Progress') statusColor = "bg-blue-100 text-blue-600";
+                    if (ticket.status === 'Completed') statusColor = "bg-gray-100 text-gray-600";
+                    
+                    return `
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-sand-200 flex flex-col gap-4 transition-all hover:shadow-md">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-ocean-900 text-xl">${ticket.name}</h4>
+                                    <div class="flex flex-wrap gap-x-4 mt-1">
+                                        <p class="text-gray-600 font-medium text-sm"><i class="ph-fill ph-phone text-seafoam-500 mr-1"></i> <a href="tel:${ticket.phone}" class="hover:text-seafoam-600">${ticket.phone}</a></p>
+                                        ${ticket.email ? `<p class="text-gray-600 font-medium text-sm"><i class="ph-fill ph-envelope-simple text-seafoam-500 mr-1"></i> <a href="mailto:${ticket.email}" class="hover:text-seafoam-600">${ticket.email}</a></p>` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-2">
+                                    <span class="${statusColor} px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">${ticket.status || 'New'}</span>
+                                    <span class="text-gray-400 text-xs font-medium"><i class="ph ph-clock mr-1"></i>${new Date(ticket.timestamp).toLocaleString([], {month:'short', day:'numeric', hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                            </div>
+                            <div class="bg-sand-50 p-4 rounded-xl text-gray-700 text-sm border border-sand-200 relative">
+                                <span class="text-[10px] font-bold text-sand-800 uppercase tracking-widest absolute -top-2 left-4 bg-sand-50 px-2 border border-sand-200 rounded">Issue Description</span>
+                                <p class="mt-2 text-base">${ticket.issue}</p>
+                            </div>
+                            <!-- Real-world Backend Management Controls -->
+                            <div class="flex justify-end gap-2 mt-2 pt-4 border-t border-gray-100">
+                                ${ticket.status !== 'In Progress' && ticket.status !== 'Completed' ? 
+                                    `<button onclick="window.updateTicketStatus('${ticket.id}', 'In Progress')" class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg text-sm font-bold transition-colors">Start Work</button>` : ''}
+                                ${ticket.status !== 'Completed' ? 
+                                    `<button onclick="window.updateTicketStatus('${ticket.id}', 'Completed')" class="px-4 py-2 bg-seafoam-50 text-seafoam-600 hover:bg-seafoam-500 hover:text-white rounded-lg text-sm font-bold transition-colors">Mark Completed</button>` : ''}
+                                <button onclick="window.deleteTicket('${ticket.id}')" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded-lg text-sm font-bold transition-colors ml-auto flex items-center gap-1">
+                                    <i class="ph-fill ph-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if(adminBtn) adminBtn.addEventListener('click', (e) => { e.preventDefault(); openAdmin(); });
+            if(closeAdminBtn) closeAdminBtn.addEventListener('click', closeAdmin);
+            adminModal.addEventListener('click', (e) => {
+                if (e.target === adminModal) closeAdmin();
+            });
+        }
+
+        // Boot up cloud connection
+        init();
+    </script>
+</body>
+</html>
