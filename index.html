@@ -367,7 +367,7 @@
                             </div>
                         </div>
 
-                        <!-- Ticket Form (Simulated Backend) -->
+                        <!-- Ticket Form -->
                         <div class="bg-sand-100 p-8 rounded-2xl border border-sand-200">
                             <h3 class="text-2xl font-bold text-ocean-900 mb-6">Start a Repair Ticket</h3>
                             <form id="contact-form" class="space-y-4">
@@ -465,10 +465,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Admin Dashboard Modal (Hidden Cloud UI) -->
-        <!-- REMOVED: Managed in the separate admin.html file to keep deployment secure, clean, and functioning perfectly -->
-
     </main>
 
     <footer class="bg-ocean-900 text-white border-t border-ocean-800">
@@ -527,7 +523,6 @@
 
     <!-- Interactive Scripts -->
     <script>
-        
         // Mobile Menu Toggle
         const btn = document.getElementById('mobile-menu-btn');
         const menu = document.getElementById('mobile-menu');
@@ -554,8 +549,6 @@
                 btn.querySelector('i').classList.add('ph-list');
             });
         });
-
-        // Form submission is now securely handled by the Firebase module below.
 
         // Sticky Header scroll effect
         window.addEventListener('scroll', () => {
@@ -713,15 +706,14 @@
         }
     </script>
 
+    <!-- LIVE DATABASE CONNECTION SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
         // CONFIGURATION AREA
         // ==========================================
-        // Paste your real Firebase Config object below to switch from sandbox mode to live internet cloud syncing!
         const FIREBASE_CONFIG = {
             apiKey: "AIzaSyBpSZLqUCuDAfprNDJW12unU0eOtKDgNYE",
             authDomain: "island-side-repair.firebaseapp.com",
@@ -731,45 +723,14 @@
             appId: "1:194705219894:web:bb04405112f0a535045397",
             measurementId: "G-BTRGS3TN0C"
         };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'iscr-app-v1';
-        let db = null;
-        let auth = null;
-        let isCloud = false;
 
-        // Verify configuration values
-        if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "mock-key") {
-            try {
-                const app = initializeApp(FIREBASE_CONFIG);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                isCloud = true;
-            } catch (err) {
-                console.warn("Could not load Cloud database. Reverting to sandbox storage.", err);
-            }
-        }
-
-        // Authenticate Cloud connection
-        async function init() {
-            if (isCloud) {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined') {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (err) {
-                    console.error("Authentication failed. Switching storage engines.", err);
-                    isCloud = false;
-                }
-            }
-            setupFormHandler();
-        }
+        // Initialize Firebase directly
+        const app = initializeApp(FIREBASE_CONFIG);
+        const db = getFirestore(app);
 
         // Setup the Client Intake Ticket Submission
-        function setupFormHandler() {
-            const form = document.getElementById('contact-form');
-            if (!form) return;
-
+        const form = document.getElementById('contact-form');
+        if (form) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -790,25 +751,13 @@
                     email: emailInput,
                     phone: phoneInput,
                     issue: issueInput,
-                    timestamp: new Date().toISOString(),
+                    timestamp: Date.now(),
                     status: 'New'
                 };
 
                 try {
-                    if (isCloud) {
-                        const ticketsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
-                        await addDoc(ticketsRef, ticketPayload);
-                    } else {
-                        const key = `iscr_tickets_${appId}`;
-                        const existingRaw = localStorage.getItem(key);
-                        const existingList = existingRaw ? JSON.parse(existingRaw) : [];
-                        
-                        // FIX: Ensure ID generation works securely across all browsers/mobile devices on GitHub pages
-                        ticketPayload.id = 'localticket_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-                        existingList.push(ticketPayload);
-                        
-                        localStorage.setItem(key, JSON.stringify(existingList));
-                    }
+                    // Send directly to the top-level "tickets" database just like the Admin panel expects!
+                    await addDoc(collection(db, "tickets"), ticketPayload);
 
                     form.querySelectorAll('div:not(#form-message)').forEach(el => el.style.display = 'none');
                     btn.style.display = 'none';
@@ -836,9 +785,6 @@
                 }
             });
         }
-
-        // Initialize Core Engine
-        init();
     </script>
 </body>
 </html>
