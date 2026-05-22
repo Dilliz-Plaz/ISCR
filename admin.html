@@ -112,7 +112,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, query, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, query, onSnapshot, doc, updateDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         lucide.createIcons();
@@ -146,21 +146,45 @@
         let unsubscribeDb = null;
 
         // Listen for Auth State Changes
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // User is logged in! Hide lock, show dashboard
-                loginOverlay.classList.add('hidden');
-                dashboard.classList.remove('hidden');
-                
-                // Securely fetch the data
-                initLiveDatabase();
-                loadSettings();
+                // FRONTEND GATEWAY: Keep the lock screen up while we verify with the database
+                const originalHTML = googleLoginBtn.innerHTML;
+                googleLoginBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Verifying Security Rules...';
+                googleLoginBtn.disabled = true;
+                lucide.createIcons();
+
+                try {
+                    // We attempt a background ping to the database. 
+                    // If your email doesn't match the rules, this will instantly crash and go to the 'catch' block below.
+                    const testPing = query(collection(db, "tickets"));
+                    await getDoc(doc(db, "settings", "global")); // Verify settings access too
+
+                    // If it didn't crash, you are legally authorized! Drop the curtain.
+                    loginOverlay.classList.add('hidden');
+                    dashboard.classList.remove('hidden');
+                    
+                    // Securely fetch the data
+                    initLiveDatabase();
+                    if (typeof loadSettings === "function") loadSettings();
+                } catch (error) {
+                    console.error("Access Verification Failed:", error);
+                    
+                    // Tell the user exactly why they were bounced
+                    alert(`ACCESS DENIED!\n\nYou logged in with: ${user.email}\nThis email does not match the one saved in your Firebase Security Rules.`);
+                    signOut(auth);
+                } finally {
+                    // Reset the login button
+                    googleLoginBtn.innerHTML = originalHTML;
+                    googleLoginBtn.disabled = false;
+                    lucide.createIcons();
+                }
             } else {
                 // Not logged in. Show lock, hide dashboard
                 loginOverlay.classList.remove('hidden');
                 dashboard.classList.add('hidden');
                 
-                // Stop listening to database if logged out to prevent permission errors
+                // Stop listening to database if logged out
                 if(unsubscribeDb) unsubscribeDb();
             }
         });
