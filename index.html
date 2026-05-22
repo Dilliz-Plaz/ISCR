@@ -349,11 +349,11 @@
                             </div>
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 bg-seafoam-50 rounded-xl flex items-center justify-center flex-shrink-0 text-seafoam-600 text-2xl">
-                                    <i class="ph-fill ph-phone"></i>
+                                    <i class="ph-fill ph-envelope"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold text-ocean-900 text-xl">Call Us Directly</h4>
-                                    <p class="text-gray-600 text-lg"><a href="tel:2505550199" id="dyn-contact-phone" class="hover:text-seafoam-600">(250) 555-0199</a></p>
+                                    <h4 class="font-bold text-ocean-900 text-xl">Email Us</h4>
+                                    <p class="text-gray-600 text-lg"><a href="mailto:support@islandsiderepair.ca" id="dyn-email" class="hover:text-seafoam-600">support@islandsiderepair.ca</a></p>
                                 </div>
                             </div>
                             <div class="flex items-start gap-4">
@@ -362,7 +362,7 @@
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-ocean-900 text-xl">Call Us Directly</h4>
-                                    <p class="text-gray-600 text-lg"><a href="tel:2505550199" class="hover:text-seafoam-600">(250) 555-0199</a></p>
+                                    <p class="text-gray-600 text-lg"><a href="tel:2505550199" id="dyn-contact-phone" class="hover:text-seafoam-600">(250) 555-0199</a></p>
                                 </div>
                             </div>
                             <div class="flex items-start gap-4">
@@ -717,7 +717,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
@@ -732,155 +732,82 @@
             appId: "1:194705219894:web:bb04405112f0a535045397",
             measurementId: "G-BTRGS3TN0C"
         };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'iscr-app-v1';
-        let db = null;
-        let auth = null;
-        let isCloud = false;
+        
+        const app = initializeApp(FIREBASE_CONFIG);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "mock-key") {
-            try {
-                const app = initializeApp(FIREBASE_CONFIG);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                isCloud = true;
-            } catch (err) {
-                console.warn("Could not load Cloud database. Reverting to sandbox storage.", err);
-            }
-        }
-
-        async function init() {
-            if (isCloud) {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined') {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (err) {
-                    console.error("Authentication failed. Switching storage engines.", err);
-                    isCloud = false;
-                }
-            }
-            setupFormHandler();
-            fetchDynamicSettings(); // Trigger the site update on load
-        }
-
-        // ==========================================
-        // FETCH LIVE ADMIN SETTINGS
-        // ==========================================
+        // Fetch Dynamic Admin Settings
         async function fetchDynamicSettings() {
-            if (!isCloud) return;
             try {
                 const snap = await getDoc(doc(db, "settings", "global"));
                 if (snap.exists()) {
                     const data = snap.data();
                     
-                    // Update Promo Text
-                    if (data.discount) {
-                        const el = document.getElementById('dyn-discount');
-                        if (el) el.innerText = data.discount;
-                    }
+                    if (data.discount) document.getElementById('dyn-discount').innerText = data.discount;
                     
-                    // Update Contact Phone & Links
                     if (data.phone) {
                         const cleanPhone = data.phone.replace(/[^0-9]/g, '');
-                        const navPhone = document.getElementById('dyn-nav-phone');
-                        const navPhoneText = document.getElementById('dyn-nav-phone-text');
-                        if(navPhone && navPhoneText) { navPhone.href = `tel:${cleanPhone}`; navPhoneText.innerText = data.phone; }
+                        const navLink = document.getElementById('dyn-nav-phone');
+                        const navText = document.getElementById('dyn-nav-phone-text');
+                        navLink.href = `tel:${cleanPhone}`;
+                        navText.innerText = data.phone;
                         
-                        const mobilePhone = document.getElementById('dyn-mobile-phone');
-                        const mobilePhoneText = document.getElementById('dyn-mobile-phone-text');
-                        if(mobilePhone && mobilePhoneText) { mobilePhone.href = `tel:${cleanPhone}`; mobilePhoneText.innerText = `Call ${data.phone}`; }
-                        
-                        const contactPhone = document.getElementById('dyn-contact-phone');
-                        if(contactPhone) { contactPhone.href = `tel:${cleanPhone}`; contactPhone.innerText = data.phone; }
+                        const mobLink = document.getElementById('dyn-mobile-phone');
+                        const mobText = document.getElementById('dyn-mobile-phone-text');
+                        mobLink.href = `tel:${cleanPhone}`;
+                        mobText.innerText = `Call ${data.phone}`;
                     }
                     
-                    // Update Address
-                    if (data.address) {
-                        const el = document.getElementById('dyn-address');
-                        if (el) el.innerText = data.address;
+                    if (data.email) {
+                        const el = document.getElementById('dyn-email');
+                        el.href = `mailto:${data.email}`;
+                        el.innerText = data.email;
                     }
                     
-                    // Resize Interactive Map Radius
+                    if (data.address) document.getElementById('dyn-address').innerHTML = data.address.replace(', ', '<br>');
+                    
                     if (data.radius && window.serviceRadiusCircle) {
                         window.serviceRadiusCircle.setRadius(Number(data.radius) * 1000);
                     }
                 }
             } catch (e) {
-                console.error("Error fetching live settings:", e);
+                console.error("Error loading settings:", e);
             }
         }
 
-        function setupFormHandler() {
-            const form = document.getElementById('contact-form');
-            if (!form) return;
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const nameInput = document.getElementById('name').value;
-                const emailInput = document.getElementById('email').value;
-                const phoneInput = document.getElementById('phone').value;
-                const issueInput = document.getElementById('issue').value;
-                
-                const btn = form.querySelector('button[type="submit"]');
-                const originalText = btn.innerHTML;
-                
-                btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Saving Ticket...';
-                btn.disabled = true;
-                btn.classList.add('opacity-75');
-
-                const ticketPayload = {
-                    name: nameInput,
-                    email: emailInput,
-                    phone: phoneInput,
-                    issue: issueInput,
-                    timestamp: new Date().toISOString(),
-                    status: 'New'
-                };
-
-                try {
-                    if (isCloud) {
-                        const ticketsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
-                        await addDoc(ticketsRef, ticketPayload);
-                    } else {
-                        const key = `iscr_tickets_${appId}`;
-                        const existingRaw = localStorage.getItem(key);
-                        const existingList = existingRaw ? JSON.parse(existingRaw) : [];
-                        
-                        ticketPayload.id = 'localticket_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-                        existingList.push(ticketPayload);
-                        
-                        localStorage.setItem(key, JSON.stringify(existingList));
-                    }
-
-                    form.querySelectorAll('div:not(#form-message)').forEach(el => el.style.display = 'none');
-                    btn.style.display = 'none';
-                    const msg = document.getElementById('form-message');
-                    msg.classList.remove('hidden');
-                    
-                    setTimeout(() => {
-                        form.reset();
-                        form.querySelectorAll('div:not(#form-message)').forEach(el => el.style.display = 'block');
-                        btn.style.display = 'flex';
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-75');
-                        msg.classList.add('hidden');
-                    }, 5000);
-
-                } catch (err) {
-                    console.error("Form transmission failed: ", err);
-                    btn.innerHTML = 'Submission Error. Try Again.';
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-75');
-                    }, 3000);
-                }
-            });
+        async function init() {
+            await signInAnonymously(auth);
+            fetchDynamicSettings();
         }
+
+        // Setup Form
+        const form = document.getElementById('contact-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = form.querySelector('button[type="submit"]');
+            btn.innerHTML = 'Sending...';
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "tickets"), {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    issue: document.getElementById('issue').value,
+                    status: 'New',
+                    timestamp: new Date().toISOString()
+                });
+                
+                form.reset();
+                document.getElementById('form-message').classList.remove('hidden');
+                setTimeout(() => document.getElementById('form-message').classList.add('hidden'), 5000);
+            } catch (err) {
+                alert("Error sending ticket. Please try calling instead.");
+            }
+            btn.innerHTML = 'Send Request';
+            btn.disabled = false;
+        });
 
         init();
     </script>
