@@ -92,7 +92,7 @@
                     <span class="flex items-center"><i class="ph ph-clock mr-2 text-seafoam-500 text-lg"></i> Mon-Fri: 9am - 5pm | Sat: 10am - 2pm</span>
                 </div>
                 <div class="font-medium text-seafoam-500" id="dyn-discount">
-                    Loading...
+                    Seniors Discount Available
                 </div>
             </div>
         </div>
@@ -118,7 +118,7 @@
                     <a href="#services-home" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Home & Family</a>
                     <a href="#reviews" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Reviews</a>
                     <a href="#contact" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Location</a>
-                    <a href="Loading..." id="dyn-nav-phone" class="bg-ocean-900 hover:bg-ocean-800 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <a href="tel:2505550199" id="dyn-nav-phone" class="bg-ocean-900 hover:bg-ocean-800 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                         <i class="ph-fill ph-phone"></i>
                         <span id="dyn-nav-phone-text">(778) 348-2526</span>
                     </a>
@@ -340,11 +340,20 @@
                         <div class="space-y-6 mb-10">
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 bg-seafoam-50 rounded-xl flex items-center justify-center flex-shrink-0 text-seafoam-600 text-2xl">
+                                    <i class="ph-fill ph-map-pin"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900 text-xl">Visit the Shop</h4>
+                                    <p class="text-gray-600" id="dyn-address">1234 Island Highway, Campbell River, BC V9W 2C3</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-seafoam-50 rounded-xl flex items-center justify-center flex-shrink-0 text-seafoam-600 text-2xl">
                                     <i class="ph-fill ph-phone"></i>
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-ocean-900 text-xl">Call Us Directly</h4>
-                                    <p class="text-gray-600 text-lg"><a href="tel:2505550199" id="dyn-contact-phone" class="hover:text-seafoam-600">Loading...</a></p>
+                                    <p class="text-gray-600 text-lg"><a href="tel:2505550199" id="dyn-contact-phone" class="hover:text-seafoam-600">(250) 555-0199</a></p>
                                 </div>
                             </div>
                             <div class="flex items-start gap-4">
@@ -766,16 +775,15 @@
                 if (snap.exists()) {
                     const data = snap.data();
                     
-                    // 1. Update Promo Text
+                    // Update Promo Text
                     if (data.discount) {
                         const el = document.getElementById('dyn-discount');
                         if (el) el.innerText = data.discount;
                     }
                     
-                    // 2. Update Phone Numbers & Click-to-Call Links
+                    // Update Contact Phone & Links
                     if (data.phone) {
                         const cleanPhone = data.phone.replace(/[^0-9]/g, '');
-                        
                         const navPhone = document.getElementById('dyn-nav-phone');
                         const navPhoneText = document.getElementById('dyn-nav-phone-text');
                         if(navPhone && navPhoneText) { navPhone.href = `tel:${cleanPhone}`; navPhoneText.innerText = data.phone; }
@@ -788,15 +796,14 @@
                         if(contactPhone) { contactPhone.href = `tel:${cleanPhone}`; contactPhone.innerText = data.phone; }
                     }
                     
-                    // 3. Update Address
+                    // Update Address
                     if (data.address) {
                         const el = document.getElementById('dyn-address');
-                        if (el) el.innerHTML = data.address.replace(', ', '<br>');
+                        if (el) el.innerText = data.address;
                     }
                     
-                    // 4. Resize Interactive Map Radius
+                    // Resize Interactive Map Radius
                     if (data.radius && window.serviceRadiusCircle) {
-                        // Settings panel is in Kilometers, Leaflet expects Meters
                         window.serviceRadiusCircle.setRadius(Number(data.radius) * 1000);
                     }
                 }
