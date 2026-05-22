@@ -91,7 +91,7 @@
                     <span class="flex items-center"><i class="ph ph-map-pin mr-2 text-seafoam-500 text-lg"></i> Campbell River, BC</span>
                     <span class="flex items-center"><i class="ph ph-clock mr-2 text-seafoam-500 text-lg"></i> Mon-Fri: 9am - 5pm | Sat: 10am - 2pm</span>
                 </div>
-                <div class="font-medium text-seafoam-500">
+                <div class="font-medium text-seafoam-500" id="dyn-discount">
                     Seniors Discount Available
                 </div>
             </div>
@@ -102,7 +102,7 @@
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center">
-                    <a href="#" class="flex items-center gap-2 group">
+                    <a href="https://photos.fife.usercontent.google.com/pw/AP1GczOZpQwJWYOEPt_g--bJDKyuC5eTHgV6CG9ZHNtBUijpfutVqHbbL-VhTA=w800-h800-s-no-gm?authuser=0" class="flex items-center gap-2 group">
                         <div class="bg-ocean-900 text-white p-2 rounded-lg group-hover:bg-seafoam-500 transition-colors">
                             <i class="ph ph-desktop text-2xl"></i>
                         </div>
@@ -118,9 +118,9 @@
                     <a href="#services-home" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Home & Family</a>
                     <a href="#reviews" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Reviews</a>
                     <a href="#contact" class="text-gray-700 hover:text-seafoam-600 font-medium transition-colors">Location</a>
-                    <a href="tel:2505550199" class="bg-ocean-900 hover:bg-ocean-800 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <a href="tel:2505550199" id="dyn-nav-phone" class="bg-ocean-900 hover:bg-ocean-800 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                         <i class="ph-fill ph-phone"></i>
-                        (778) 348-2526
+                        <span id="dyn-nav-phone-text">(778) 348-2526</span>
                     </a>
                 </nav>
 
@@ -138,9 +138,9 @@
             <div class="px-4 pt-2 pb-6 space-y-2 shadow-inner">
                 <a href="#services-home" class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-seafoam-600 hover:bg-seafoam-50">Home & Family Services</a>
                 <a href="#contact" class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-seafoam-600 hover:bg-seafoam-50">Location & Hours</a>
-                <a href="tel:2505550199" class="mt-4 w-full bg-ocean-900 text-white px-6 py-4 rounded-xl font-bold flex justify-center items-center gap-2 text-lg">
+                <a href="tel:2505550199" id="dyn-mobile-phone" class="mt-4 w-full bg-ocean-900 text-white px-6 py-4 rounded-xl font-bold flex justify-center items-center gap-2 text-lg">
                     <i class="ph-fill ph-phone"></i>
-                    Call (250) 555-0199
+                    <span id="dyn-mobile-phone-text">Call (250) 555-0199</span>
                 </a>
             </div>
         </div>
@@ -344,7 +344,16 @@
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-ocean-900 text-xl">Visit the Shop</h4>
-                                    <p class="text-gray-600">1234 Island Highway<br>Campbell River, BC V9W 2C3</p>
+                                    <p class="text-gray-600" id="dyn-address">1234 Island Highway<br>Campbell River, BC V9W 2C3</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-seafoam-50 rounded-xl flex items-center justify-center flex-shrink-0 text-seafoam-600 text-2xl">
+                                    <i class="ph-fill ph-phone"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-ocean-900 text-xl">Call Us Directly</h4>
+                                    <p class="text-gray-600 text-lg"><a href="tel:2505550199" id="dyn-contact-phone" class="hover:text-seafoam-600">(250) 555-0199</a></p>
                                 </div>
                             </div>
                             <div class="flex items-start gap-4">
@@ -587,7 +596,7 @@
                 .bindPopup('<b style="color: #0B2031; font-size:14px;">Island Side Computer Repair</b><br>1234 Island Hwy.<br><a href="#contact" style="color:#2A9D8F; font-weight:bold;">Get Directions</a>');
 
             // Draw Service Area Radius
-            L.circle([50.0246, -125.2475], {
+            window.serviceRadiusCircle = L.circle([50.0246, -125.2475], {
                 color: '#2A9D8F',
                 fillColor: '#2A9D8F',
                 fillOpacity: 0.15,
@@ -706,10 +715,10 @@
         }
     </script>
 
-    <!-- LIVE DATABASE CONNECTION SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
         // CONFIGURATION AREA
@@ -723,14 +732,92 @@
             appId: "1:194705219894:web:bb04405112f0a535045397",
             measurementId: "G-BTRGS3TN0C"
         };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'iscr-app-v1';
+        let db = null;
+        let auth = null;
+        let isCloud = false;
 
-        // Initialize Firebase directly
-        const app = initializeApp(FIREBASE_CONFIG);
-        const db = getFirestore(app);
+        if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "mock-key") {
+            try {
+                const app = initializeApp(FIREBASE_CONFIG);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isCloud = true;
+            } catch (err) {
+                console.warn("Could not load Cloud database. Reverting to sandbox storage.", err);
+            }
+        }
 
-        // Setup the Client Intake Ticket Submission
-        const form = document.getElementById('contact-form');
-        if (form) {
+        async function init() {
+            if (isCloud) {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (err) {
+                    console.error("Authentication failed. Switching storage engines.", err);
+                    isCloud = false;
+                }
+            }
+            setupFormHandler();
+            fetchDynamicSettings(); // Trigger the site update on load
+        }
+
+        // ==========================================
+        // FETCH LIVE ADMIN SETTINGS
+        // ==========================================
+        async function fetchDynamicSettings() {
+            if (!isCloud) return;
+            try {
+                const snap = await getDoc(doc(db, "settings", "global"));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    
+                    // 1. Update Promo Text
+                    if (data.discount) {
+                        const el = document.getElementById('dyn-discount');
+                        if (el) el.innerText = data.discount;
+                    }
+                    
+                    // 2. Update Phone Numbers & Click-to-Call Links
+                    if (data.phone) {
+                        const cleanPhone = data.phone.replace(/[^0-9]/g, '');
+                        
+                        const navPhone = document.getElementById('dyn-nav-phone');
+                        const navPhoneText = document.getElementById('dyn-nav-phone-text');
+                        if(navPhone && navPhoneText) { navPhone.href = `tel:${cleanPhone}`; navPhoneText.innerText = data.phone; }
+                        
+                        const mobilePhone = document.getElementById('dyn-mobile-phone');
+                        const mobilePhoneText = document.getElementById('dyn-mobile-phone-text');
+                        if(mobilePhone && mobilePhoneText) { mobilePhone.href = `tel:${cleanPhone}`; mobilePhoneText.innerText = `Call ${data.phone}`; }
+                        
+                        const contactPhone = document.getElementById('dyn-contact-phone');
+                        if(contactPhone) { contactPhone.href = `tel:${cleanPhone}`; contactPhone.innerText = data.phone; }
+                    }
+                    
+                    // 3. Update Address
+                    if (data.address) {
+                        const el = document.getElementById('dyn-address');
+                        if (el) el.innerHTML = data.address.replace(', ', '<br>');
+                    }
+                    
+                    // 4. Resize Interactive Map Radius
+                    if (data.radius && window.serviceRadiusCircle) {
+                        // Settings panel is in Kilometers, Leaflet expects Meters
+                        window.serviceRadiusCircle.setRadius(Number(data.radius) * 1000);
+                    }
+                }
+            } catch (e) {
+                console.error("Error fetching live settings:", e);
+            }
+        }
+
+        function setupFormHandler() {
+            const form = document.getElementById('contact-form');
+            if (!form) return;
+
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -751,13 +838,24 @@
                     email: emailInput,
                     phone: phoneInput,
                     issue: issueInput,
-                    timestamp: Date.now(),
+                    timestamp: new Date().toISOString(),
                     status: 'New'
                 };
 
                 try {
-                    // Send directly to the top-level "tickets" database just like the Admin panel expects!
-                    await addDoc(collection(db, "tickets"), ticketPayload);
+                    if (isCloud) {
+                        const ticketsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tickets');
+                        await addDoc(ticketsRef, ticketPayload);
+                    } else {
+                        const key = `iscr_tickets_${appId}`;
+                        const existingRaw = localStorage.getItem(key);
+                        const existingList = existingRaw ? JSON.parse(existingRaw) : [];
+                        
+                        ticketPayload.id = 'localticket_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+                        existingList.push(ticketPayload);
+                        
+                        localStorage.setItem(key, JSON.stringify(existingList));
+                    }
 
                     form.querySelectorAll('div:not(#form-message)').forEach(el => el.style.display = 'none');
                     btn.style.display = 'none';
@@ -785,6 +883,8 @@
                 }
             });
         }
+
+        init();
     </script>
 </body>
 </html>
